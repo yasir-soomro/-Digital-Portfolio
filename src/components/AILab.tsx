@@ -213,7 +213,7 @@ export default function AILab() {
               ) : activeTab === 'video' ? (
                 <video src={result} controls className="w-full rounded-lg" autoPlay loop />
               ) : (
-                <div className="prose prose-invert max-w-none">
+                <div className="prose dark:prose-invert max-w-none">
                   <p className="whitespace-pre-wrap text-[var(--text-primary)]">{result}</p>
                   <button 
                     onClick={handleTTS}

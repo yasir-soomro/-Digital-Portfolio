@@ -8,10 +8,11 @@ import * as THREE from 'three';
 
 function SkillItem({ position, skill, index }: { position: [number, number, number], skill: any, index: number }) {
   const meshRef = useRef<THREE.Mesh>(null!);
+  const materialRef = useRef<any>(null!);
   const theme = useThemeStore((state) => state.theme);
   const mode = useThemeStore((state) => state.mode);
   
-  const color = useMemo(() => {
+  const colorString = useMemo(() => {
     switch (theme) {
       case 'emerald': return '#10b981';
       case 'purple': return '#a855f7';
@@ -20,15 +21,23 @@ function SkillItem({ position, skill, index }: { position: [number, number, numb
     }
   }, [theme]);
 
+  const targetColor = useMemo(() => new THREE.Color(colorString), [colorString]);
+
   useFrame((state) => {
     if (meshRef.current) {
       // Gentle rotation
       meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.3 + index) * 0.2;
       meshRef.current.rotation.y += 0.01;
       
-      // Pulsation effect
-      const scale = 1 + Math.sin(state.clock.elapsedTime * 2 + index) * 0.1;
+      // Pulsation effect (Subtle)
+      const scale = 1 + Math.sin(state.clock.elapsedTime * 1.5 + index) * 0.08;
       meshRef.current.scale.set(scale, scale, scale);
+    }
+
+    if (materialRef.current) {
+      // Smooth color transition
+      materialRef.current.color.lerp(targetColor, 0.05);
+      materialRef.current.emissive.lerp(targetColor, 0.05);
     }
   });
 
@@ -42,8 +51,9 @@ function SkillItem({ position, skill, index }: { position: [number, number, numb
       <mesh ref={meshRef}>
         <Icosahedron args={[0.8, 1]}>
           <MeshDistortMaterial
-            color={color}
-            emissive={color}
+            ref={materialRef}
+            color={targetColor}
+            emissive={targetColor}
             emissiveIntensity={mode === 'light' ? 0.5 : 2}
             wireframe={mode === 'dark'}
             transparent
@@ -61,7 +71,7 @@ function SkillItem({ position, skill, index }: { position: [number, number, numb
             }
             backdrop-blur-md flex items-center gap-2 transition-colors duration-300
           `}>
-            <span style={{ color: color, textShadow: `0 0 10px ${color}` }}>●</span> {skill.name}
+            <span style={{ color: colorString, textShadow: `0 0 10px ${colorString}` }}>●</span> {skill.name}
           </div>
         </Html>
       </mesh>
